@@ -1,7 +1,7 @@
 import numpy as numpy
 
 
-products = ["apple","intel","amd","microsoft",
+stocks = ["apple","intel","amd","microsoft",
         "pfizer","moderna","johnson & johnson",
         "bitcoin","ethereum","dash","cardano",
         "nvidia","xbox"]
@@ -15,20 +15,21 @@ UsersSearch ={
 
 
 def build_co_occurence():
-    matrix = numpy.zeros([len(products),len(products)])
+    matrix = numpy.zeros([len(stocks),len(stocks)])
     for _,k in UsersSearch.items():
         for i in k:
             for j in k:
                 if i!=j:
-                    matrix[products.index(i)][products.index(j)]=1
+                    matrix[stocks.index(i)][stocks.index(j)]=1
     return matrix
 
 def search(items,matrix):
     search=[]
     for k in items:
-        for i in range(0,len(products)):
-            if matrix[products.index(k)][i] == 1:
-                search.append(products[i])
+        for i in range(0,len(stocks)):
+            if matrix[stocks.index(k)][i] == 1:
+                if stocks[i] not in search:
+                    search.append(stocks[i])
 
     return search
 
@@ -36,4 +37,4 @@ def search(items,matrix):
 
 if __name__ == '__main__':
     occ_matrix = build_co_occurence()
-    print(search(["intel","pfizer"],occ_matrix))
+    print(search(["intel","apple"],occ_matrix))
