@@ -15,85 +15,81 @@ df
 
 df.shape
 
-
-
-plt.figure(figsize=(16,8))
-plt.title('Close price history')
-plt.plot(df['Close'])
-plt.xlabel('Date', fontsize=18)
-#plt.ylabel('Close Price USD ($)',18)
-
-
-# Create a new dataframe with only the Close column
-
 btc_close=df.filter(['Close'])
-#Convert the dataframe to a numpy array
-
 dataset = btc_close.values
 
-# get the number of rows to train the model on
 
-training_data_len = math.ceil(len(dataset) * 0.8)
+print(type(dataset))
 
-training_data_len
-
+for i in range (0,7):
 
 
-
-#Scale the data
-
-scaler = MinMaxScaler(feature_range = (0,1))
-scaled_data = scaler.fit_transform(dataset)
-
-scaled_data
-
-
-#create the training data set
-#Create the scaled data set
-
-train_data = scaled_data[0:training_data_len,:]
-#Split the data into x_train and y_train data sets
-
-x_train = []
-y_train = []
-
-for i in range (100,len(train_data)):
-    x_train.append(train_data[i-100:i, 0])
-    y_train.append(train_data[i , 0])
+    # Create a new dataframe with only the Close column
+    #Convert the dataframe to a numpy array
 
 
 
-#conver the c_train and y_train to numpy arrays
+    # get the number of rows to train the model on
 
+    training_data_len = math.ceil(len(dataset) * 0.8)
 
-x_train,y_train = np.array(x_train), np.array(y_train)
-#Reshape the data
-x_train=np.reshape(x_train,(x_train.shape[0],x_train.shape[1],1))
-x_train.shape
+    training_data_len
 
 
 
 
-#Build the LSTM model
-model = Sequential()
+    #Scale the data
 
-model.add(LSTM(50,return_sequences=True, input_shape = (x_train.shape[1],1 )))
-model.add(LSTM(50,return_sequences = False))
-model.add(Dense(25))
-model.add(Dense(1))
+    scaler = MinMaxScaler(feature_range = (0,1))
+    scaled_data = scaler.fit_transform(dataset)
 
+    scaled_data
 
 
-#compile the model
-model.compile(optimizer='adam',loss='mean_squared_error')
+    #create the training data set
+    #Create the scaled data set
+
+    train_data = scaled_data[0:training_data_len,:]
+    #Split the data into x_train and y_train data sets
+
+    x_train = []
+    y_train = []
+
+    for i in range (100,len(train_data)):
+        x_train.append(train_data[i-100:i, 0])
+        y_train.append(train_data[i , 0])
+
+
+
+    #conver the c_train and y_train to numpy arrays
+
+
+    x_train,y_train = np.array(x_train), np.array(y_train)
+    #Reshape the data
+    x_train=np.reshape(x_train,(x_train.shape[0],x_train.shape[1],1))
+    x_train.shape
 
 
 
 
-prom=0
+    #Build the LSTM model
+    model = Sequential()
 
-for i in range (0,10):
-    print(i)
+    model.add(LSTM(50,return_sequences=True, input_shape = (x_train.shape[1],1 )))
+    model.add(LSTM(50,return_sequences = False))
+    model.add(Dense(25))
+    model.add(Dense(1))
+
+
+
+    #compile the model
+    model.compile(optimizer='adam',loss='mean_squared_error')
+
+
+
+
+
+
     #train the model
     model.fit(x_train,y_train,batch_size=1,epochs=1)
 
@@ -137,16 +133,16 @@ for i in range (0,10):
     valid = btc_close[training_data_len:]
     valid['Predictions'] = predictions
     #Visualize the data
-
-    plt.figure(figsize=(16,8))
-    plt.title('Model')
-    plt.xlabel('Date',fontsize=18)
-    plt.ylabel=('Close Price USD ($)',18)
-    plt.plot(train['Close'])
-    plt.plot(valid[['Close','Predictions']])
-    plt.legend(['Train','Val','Predictions'], loc = 'lower right')
-    plt.show()
-
+    '''
+        plt.figure(figsize=(16,8))
+        plt.title('Model')
+        plt.xlabel('Date',fontsize=18)
+        plt.ylabel=('Close Price USD ($)',18)
+        plt.plot(train['Close'])
+        plt.plot(valid[['Close','Predictions']])
+        plt.legend(['Train','Val','Predictions'], loc = 'lower right')
+        plt.show()
+    '''
 
 
 
@@ -167,7 +163,6 @@ for i in range (0,10):
     #append the last 60days
     X_test.append(last_60_days_scaled)
     X_test = np.array(X_test)
-    type(X_test)
 
 
 
@@ -185,8 +180,13 @@ for i in range (0,10):
 
     pred_price = model.predict (X_test)
 
+
+
     #undo the scaling
-    pred_price =scaler.inverse_transform(pred_price)
+    pred_price = scaler.inverse_transform(pred_price)
+
+    np.append(dataset,pred_price)
+
     #print(pred_price)
 
 
@@ -194,14 +194,15 @@ for i in range (0,10):
 
     #apple_quote2=web.DataReader('ADA-USD',data_source='yahoo',start='2021-09-24',end='2021-09-24')
     #print(apple_quote2['Close'][0])
-    prom += pred_price[0][0]
+
+#apple_quote2=web.DataReader('ADA-USD',data_source='yahoo',start='2021-09-24',end='2021-09-24')
+#print("Real: "+str(apple_quote2['Close'][0]))
 
 
-prom = prom/10
-apple_quote2=web.DataReader('ADA-USD',data_source='yahoo',start='2021-09-24',end='2021-09-24')
-print("Real: "+str(apple_quote2['Close'][0]))
 
-print ("Aprox "+str(prom))
-dif = apple_quote2['Close'][0]-prom
-porc = (dif*100)/apple_quote2['Close'][0]
-print(str(porc)+"%")
+
+plt.figure(figsize=(16,8))
+plt.title('Close price history')
+plt.plot(dataset)
+plt.xlabel('Date', fontsize=18)
+#plt.ylabel('Close Price USD ($)',18)
